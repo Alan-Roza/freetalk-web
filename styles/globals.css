@@ -6,6 +6,30 @@ body {
     Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
 
+html {
+  font-size: 62.5%;
+}
+
+@font-face {
+  font-family: TorusBold;
+  src: url(../src/assets/fonts/Fontspring-DEMO-toruspro-bold.otf);
+}
+
+@font-face {
+  font-family: Torus;
+  src: url(../src/assets/fonts/Fontspring-DEMO-toruspro-semibold.otf);
+}
+
+@font-face {
+  font-family: TorusLight;
+  src: url(../src/assets/fonts/Fontspring-DEMO-toruspro-light.otf);
+}
+
+p {
+  font-family: Torus;
+  color: white;
+}
+
 a {
   color: inherit;
   text-decoration: none;

@@ -2,15 +2,22 @@
   "name": "freetalk",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3030",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "@types/express": "^4.17.13",
+    "axios": "^0.25.0",
+    "dayjs": "^1.10.7",
+    "express": "^4.17.2",
     "next": "12.0.10",
+    "nodemon": "^2.0.15",
     "react": "17.0.2",
-    "react-dom": "17.0.2"
+    "react-dom": "17.0.2",
+    "socket.io": "^4.4.1",
+    "socket.io-client": "^4.4.1"
   },
   "devDependencies": {
     "@types/node": "17.0.17",
