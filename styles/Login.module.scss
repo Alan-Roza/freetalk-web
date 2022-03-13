@@ -1,0 +1,197 @@
+.background {
+  background-color: #132B3CDD;
+  height: 100vh;
+  min-height: -webkit-fill-available;
+  background-image: url(../src/assets/background-signup.jpeg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  @media only screen and (max-width: 562px) {
+    display: none;
+  }
+}
+
+.logo {
+  position: absolute;
+  top: 0;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: center;
+
+  p {
+    font-size: 2.5rem;
+    font-family: Quicksand;
+    padding-right: 2rem;
+  }
+
+  @media only screen and (max-width: 562px) {
+    display: none;
+  }
+}
+
+.logoCard {  
+  display: none;
+  
+  @media only screen and (max-width: 562px) {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    justify-content: center;
+    height: 40px;
+  
+    p {
+      font-size: 2.5rem;
+      font-family: Quicksand;
+      padding-right: 2rem;
+    }
+  }
+}
+
+.titleCard {
+  font-size: 2.1rem;
+  font-family: Quicksand;
+  margin: 0;
+}
+
+.wellcome {
+  color: #2c90dd;
+  font-size: 1.7rem;
+  font-family: Quicksand;
+  margin: 0;
+}
+
+.headerCard {
+  text-align: center;
+  margin-bottom: 2rem;
+  @media only screen and (max-width: 562px) {
+    margin-top: -3rem;
+    margin-bottom: 3rem;
+  }
+}
+
+.card {
+  position: absolute;
+  background-color: #132B3CCC;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 3rem;
+  height: 40rem;
+  padding: 2rem;
+  width: 45rem;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  align-items: center;
+
+  @media only screen and (max-width: 562px) {
+    background-image: url(../src/assets/background-signup.jpeg);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-blend-mode: color;
+
+    display: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    overflow: hidden;
+    transform: none;
+    height: 100%;
+    width: -webkit-fill-available;
+    border-radius: 0;;
+  }
+}
+
+
+.field {
+  padding: 1rem 0;
+
+  label {
+    color: white;
+    font-size: 1.6rem;
+    margin-left: 1rem;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 400;
+  }
+
+  ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+    color: rgb(212, 212, 212);
+    font: lighter 1.6rem 'Quicksand', sans-serif;
+  }
+  ::-moz-placeholder { /* Firefox 19+ */
+    color: rgb(212, 212, 212);
+    font: lighter 1.6rem 'Quicksand', sans-serif;
+  }
+  :-ms-input-placeholder { /* IE 10+ */
+    color: rgb(212, 212, 212);
+    font: lighter 1.6rem 'Quicksand', sans-serif;
+  }
+  :-moz-placeholder { /* Firefox 18- */
+    color: rgb(212, 212, 212);
+    font: lighter 1.6rem 'Quicksand', sans-serif;
+  }
+
+  input {
+    transition: 250ms;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.116);
+    border-radius: 8px;
+    height: 4rem;
+    padding: 2rem;
+    font-size: 1.7rem;
+  
+    &:focus {
+      transition: 250ms;
+      border: 2px solid #2c90dd;
+    }
+  }  
+}
+
+.registerAsk {
+  font-size: 1.2rem;
+  
+  & > a {
+    transition: 250ms;
+    color: #0C84DF;
+    cursor: pointer;
+
+    &:hover, &:focus, &:focus-within, &:focus-visible {
+      transition: 250ms;
+      filter: brightness(1.1);
+      outline: none;
+    }
+
+  }
+}
+
+.inputPassword {
+  white-space: nowrap;
+}
+
+.passwordVisibility {
+  & > span {
+    transform: translate(-3.5rem, 0.8rem);
+    cursor: pointer;
+  }
+}
+
+.buttonSubmit {
+  transition: 250ms;
+  font: bold 1.4rem 'Quicksand', sans-serif;
+  cursor: pointer;
+  height: 4rem;
+  background: #0C85DE;
+  border-radius: 5px;
+  margin-top: 1.5rem;
+
+  &:hover, &:focus {
+    background: #0C85DE;
+    transition: 250ms;
+    filter: brightness(1.1);
+  }
+}
