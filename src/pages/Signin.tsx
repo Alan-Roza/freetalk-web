@@ -3,14 +3,33 @@ import styles from '../../styles/Login.module.scss'
 import { onlyIcon, eyeVisible, eyeNotVisible } from '../assets'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
+import signin from '../consumers/signin'
+const Swal = require('sweetalert2')
 
 function SignIn() {
   const router = useRouter()
 
   const [togglePassword, setTogglePassword] = useState(false)
 
-  const onSubmit = (values: any) => {
-    console.log(values)
+  const onSubmit = async (values: any) => {
+    values.preventDefault();
+
+    try {
+      const response = await signin.login({
+        username: values.target.username.value, 
+        password: values.target.password.value
+      })
+      if (response) router.push('/')
+      console.log(response)
+    } catch(error: any) {
+      console.log(error)
+      Swal.fire({
+        icon: 'warning',
+        title: 'Oops...',
+        confirmButtonText: 'Entendi',
+        text: error.message
+      })
+    }
   }
 
   return (
@@ -36,8 +55,8 @@ function SignIn() {
 
           <form name="signin" onSubmit={onSubmit}>
             <div className={styles.field}>
-              <label htmlFor="login">Nome do Usuário</label>
-              <input placeholder='Digite o seu usuário' id="login" name="login" type="text" />
+              <label htmlFor="username">Nome do Usuário</label>
+              <input placeholder='Digite o seu usuário' id="username" name="username" type="text" />
             </div>
             <div className={styles.field}>
               <label htmlFor="password">Senha</label>
@@ -53,7 +72,7 @@ function SignIn() {
           </form>
         </div>
 
-        <p className={styles.registerAsk}>Ainda não é registrado? <a onClick={() => router.push('/Signup')} tabIndex={0}>Registrar</a></p>
+        <p className={styles.switchLog}>Ainda não é registrado? <a onClick={() => router.push('/Signup')} tabIndex={0}>Registrar</a></p>
       </div>
     </>
   )

@@ -107,6 +107,41 @@
   }
 }
 
+.cardSignup {
+  position: absolute;
+  background-color: #132B3CCC;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 3rem;
+  height: 45rem;
+  padding: 2rem;
+  width: 45rem;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  align-items: center;
+
+  @media only screen and (max-width: 562px) {
+    background-image: url(../src/assets/background-signup.jpeg);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-blend-mode: color;
+
+    display: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    overflow: hidden;
+    transform: none;
+    height: 100%;
+    width: -webkit-fill-available;
+    border-radius: 0;;
+  }
+}
 
 .field {
   padding: 1rem 0;
@@ -152,7 +187,7 @@
   }  
 }
 
-.registerAsk {
+.switchLog {
   font-size: 1.2rem;
   
   & > a {
@@ -162,7 +197,7 @@
 
     &:hover, &:focus, &:focus-within, &:focus-visible {
       transition: 250ms;
-      filter: brightness(1.1);
+      filter: brightness(1.2);
       outline: none;
     }
 

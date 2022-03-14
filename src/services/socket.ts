@@ -1,6 +1,7 @@
 const io = require('socket.io-client')
+import { server } from '../config'
 
-const URL = 'http://localhost:3100'
+const URL = server
 const socket = io(URL)
 
 socket.on('connect', () => {

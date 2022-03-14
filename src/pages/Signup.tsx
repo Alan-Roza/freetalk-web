@@ -3,6 +3,8 @@ import styles from '../../styles/Login.module.scss'
 import { onlyIcon, eyeVisible, eyeNotVisible } from '../assets'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
+import signup from '../consumers/signup'
+import Swal from 'sweetalert2'
 
 function SignUp() {
   const router = useRouter()
@@ -10,8 +12,38 @@ function SignUp() {
   const [togglePasswordMain, setTogglePasswordMain] = useState(false)
   const [togglePasswordConfirm, setTogglePasswordConfirm] = useState(false)
 
-  const onSubmit = (values: any) => {
+  const onSubmit = async (values: any) => {
+    values.preventDefault();
+
     console.log(values)
+
+    try {
+      const response = await signup.register({
+        username: values.target.username.value, 
+        password: values.target.password.value,
+        passwordConfirm: values.target.passwordConfirm.value
+      })
+      if (response) {
+        router.push('/Signin')
+        Swal.fire({
+          position: 'center',
+          icon: 'success',
+          title: 'Sucesso',
+          text: response.message,
+          showConfirmButton: false,
+          timer: 1500
+        })
+      }
+      console.log(response)
+    } catch(error: any) {
+      console.log(error)
+      Swal.fire({
+        icon: 'warning',
+        title: 'Oops...',
+        confirmButtonText: 'Entendi',
+        text: error.message
+      })
+    }
   }
 
   return (
@@ -23,7 +55,7 @@ function SignUp() {
         <p>FreeTalk</p>
       </div>
 
-      <div className={styles.card}>
+      <div className={styles.cardSignup}>
         <div className={styles.logoCard}>
           <Image height={70} width={70} src={onlyIcon} alt="FreeTalk logo marca" />
           <p>FreeTalk</p>
@@ -35,10 +67,10 @@ function SignUp() {
             <p className={styles.titleCard}>Para começar, crie seu cadastro</p>
           </div>
 
-          <form name="signin" onSubmit={onSubmit}>
+          <form name="signup" onSubmit={onSubmit}>
             <div className={styles.field}>
-              <label htmlFor="login">Nome do Usuário</label>
-              <input placeholder='Digite um nome' id="login" name="login" type="text" />
+              <label htmlFor="username">Nome do Usuário</label>
+              <input placeholder='Digite um nome' id="username" name="username" type="text" />
             </div>
 
             <div className={styles.field}>
@@ -52,9 +84,9 @@ function SignUp() {
             </div>
 
             <div className={styles.field}>
-              <label htmlFor="password">Confirmar Senha</label>
+              <label htmlFor="passwordConfirm">Confirmar Senha</label>
               <div className={styles.inputPassword}>
-                <input placeholder='Confirme sua senha' type={togglePasswordConfirm ? 'text' : 'password'} id="password" name="password" />
+                <input placeholder='Confirme sua senha' type={togglePasswordConfirm ? 'text' : 'password'} id="passwordConfirm" name="passwordConfirm" />
                 <span className={styles.passwordVisibility} onClick={() => setTogglePasswordConfirm(prev => !prev)}>
                   <Image height={25} width={25} src={togglePasswordConfirm ? eyeVisible : eyeNotVisible} />
                 </span>
@@ -65,7 +97,7 @@ function SignUp() {
           </form>
         </div>
 
-        <p className={styles.registerAsk}>Já possui cadastro? <a onClick={() => router.push('/Signin')} tabIndex={0}>Entrar</a></p>
+        <p className={styles.switchLog}>Já possui cadastro? <a onClick={() => router.push('/Signin')} tabIndex={0}>Entrar</a></p>
       </div>
     </>
   )

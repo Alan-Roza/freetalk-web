@@ -82,3 +82,43 @@ input, input:focus, input:active, input:focus-visible, textarea, textarea:focus,
 * {
   box-sizing: border-box;
 }
+
+
+// SWEETMODAL
+.swal2-title {
+  font-size: 3.75rem !important;
+
+  @media only screen and (max-width: 562px) {
+    font-size: 2.75rem !important;
+  }
+}
+
+.swal2-html-container {
+  font-size: 2.2rem !important;
+
+  @media only screen and (max-width: 562px) {
+    font-size: 1.7rem !important;
+  }
+}
+
+.swal2-confirm {
+  font-size: 1.8rem !important;
+  background-color: #0C85DE !important;
+
+  @media only screen and (max-width: 562px) {
+    font-size: 1.5rem !important;
+  }
+}
+
+.swal2-modal {
+  min-width: fit-content;
+
+  @media only screen and (max-width: 562px) {
+    width: 100% !important;
+  }
+}
+
+.swal2-html-container {
+  margin: 3rem 5rem !important;
+  padding: 0;
+}
