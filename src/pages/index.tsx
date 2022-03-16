@@ -8,6 +8,8 @@ import CardChat from '../components/CardChat'
 import socket from '../services/socket'
 import TextareaAutosize from 'react-textarea-autosize';
 import Message from '../components/Messages'
+import axios from 'axios'
+import signin from '../consumers/signin'
 
 interface IList {
   name: string
@@ -55,6 +57,13 @@ const Home: NextPage = () => {
     return () => socket.off('chatlist')
   }, [])
 
+  function onPlus() {
+    signin.login({
+      username: 'teste', 
+      password: 'password'
+    })
+  }
+
   return (
     <div className={styles.container}>
       <Head>
@@ -68,7 +77,7 @@ const Home: NextPage = () => {
       <main className={styles.main}>
         <section className={styles.chats}>
           <div className={styles.header}>
-            <div className={styles.search}>
+            <div className={styles.search} onClick={() => onPlus()}>
               <Image height={'20px'} src={plus} alt="Sinal de mais" />
             </div>
             <p className={styles.headerTitle} >Meus Chats</p>

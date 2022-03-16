@@ -19,7 +19,10 @@ function SignIn() {
         username: values.target.username.value, 
         password: values.target.password.value
       })
-      if (response) router.push('/')
+      if (response) {
+        localStorage.setItem('@freetalk/token', response?.token)
+        router.push('/')
+      }
       console.log(response)
     } catch(error: any) {
       console.log(error)
