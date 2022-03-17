@@ -10,6 +10,9 @@ import TextareaAutosize from 'react-textarea-autosize';
 import Message from '../components/Messages'
 import axios from 'axios'
 import signin from '../consumers/signin'
+import authentication from '../consumers/authentication'
+import { useRouter } from 'next/router'
+import Swal from 'sweetalert2'
 
 interface IList {
   name: string
@@ -25,6 +28,8 @@ interface IMessage {
 }
 
 const Home: NextPage = () => {
+  const router = useRouter()
+
   const [list, setList] = useState<IList[]>()
   const [messages, setMessages] = useState<IMessage[]>([])
   const [textareaValue, setTextareaValue] = useState<string>('')
@@ -34,6 +39,26 @@ const Home: NextPage = () => {
     console.log(_id, 'id')
     socket.emit('clickChatToConversation', _id)
   }
+
+  useEffect(() => {
+    async function getRefreshToken() {
+      try {
+        const response = await authentication.refreshToken()
+        console.log(response)
+      } catch (err: any) {
+        console.error(err)
+        router.push('/Signin')
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          confirmButtonText: 'Entendi',
+          text: err
+        })
+      }
+    }
+
+    getRefreshToken()
+  }, [])
 
   useEffect(() => {
     socket.on('chatConversation', (conversation: any) => {
