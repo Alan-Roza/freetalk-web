@@ -110,12 +110,40 @@ input, input:focus, input:active, input:focus-visible, textarea, textarea:focus,
   }
 }
 
+.swal2-cancel {
+  font-size: 1.8rem !important;
+  background-color: transparent !important;
+  color: grey !important;
+
+  &:hover, &:focus-within, &:active {
+    background: transparent !important;
+    color: rgb(92, 92, 92) !important;
+    box-shadow: none;
+  }
+
+  @media only screen and (max-width: 562px) {
+    font-size: 1.5rem !important;
+  }
+}
+
 .swal2-modal {
   min-width: fit-content;
 
   @media only screen and (max-width: 562px) {
     width: 100% !important;
   }
+}
+
+.swal2-input {
+  font-size: 1.5rem !important;
+  color: grey !important;
+  &:focus {
+    width: auto;
+  }
+}
+
+.swal2-validation-message {
+  font-size: 1.3rem !important;
 }
 
 .swal2-html-container {

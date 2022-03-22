@@ -13,9 +13,11 @@ import signin from '../consumers/signin'
 import authentication from '../consumers/authentication'
 import { useRouter } from 'next/router'
 import Swal from 'sweetalert2'
+import user from '../consumers/user'
 
 interface IList {
   name: string
+  receiverName: string
   message: string[]
   notification: boolean
   updateAt: Date | string
@@ -23,28 +25,48 @@ interface IList {
 }
 
 interface IMessage {
-  message:  string
+  message: string
   _id?: string
 }
 
 const Home: NextPage = () => {
   const router = useRouter()
 
-  const [list, setList] = useState<IList[]>()
+  const [list, setList] = useState<IList[] | any>([])
   const [messages, setMessages] = useState<IMessage[]>([])
   const [textareaValue, setTextareaValue] = useState<string>('')
-  const [currentConversation, setCurrentConversation] = useState<IList>()
+  const [currentUser, setCurrentUser] = useState<any>({})
+  const [currentConversation, setCurrentConversation] = useState<IList | any>()
+  const [allChats, setAllChats] = useState<IList | any>()
 
   const onClickChat = (_id: string) => {
-    console.log(_id, 'id')
-    socket.emit('clickChatToConversation', _id)
+    const chatSelected = list.filter((chat: any) => chat._id === _id)
+    console.log(chatSelected)
+    setCurrentConversation(chatSelected)
+  }
+
+  const newChat = (targetUser: any) => {
+    console.log(targetUser, 'target')
+    socket.emit('new-chat', {
+      references: [
+        targetUser._id,
+        currentUser.userId
+      ],
+      messages: [{
+        senderId: currentUser.userId
+      }],
+      receiverName: targetUser.username,
+      privateChat: true
+    })
   }
 
   useEffect(() => {
     async function getRefreshToken() {
       try {
         const response = await authentication.refreshToken()
-        console.log(response)
+        if (response) {
+          setCurrentUser(response.data)
+        }
       } catch (err: any) {
         console.error(err)
         router.push('/Signin')
@@ -61,31 +83,67 @@ const Home: NextPage = () => {
   }, [])
 
   useEffect(() => {
-    socket.on('chatConversation', (conversation: any) => {
-      setCurrentConversation(conversation)
+    socket.on('output-messages', (chats: any) => {
+      setList(chats)
     })
   }, [])
-  
-  const sendMessage = () => {
-    socket.emit('chat-message', messages[messages.length - 1])
-  }
 
   useEffect(() => {
-    sendMessage()
-  }, [messages])
-
-  useEffect(() => {
-    socket.on('chatlist', (list: any) => {
-      setList(list)
+    socket.on('chat-created', (chats: any) => {
+      setList( (prev: any) => ([...prev, chats]))
     })
-
-    return () => socket.off('chatlist')
   }, [])
 
-  function onPlus() {
-    signin.login({
-      username: 'teste', 
-      password: 'password'
+  // const sendMessage = () => {
+  //   socket.emit('chat-message', messages[messages.length - 1])
+  // }
+
+  // useEffect(() => {
+  //   sendMessage()
+  // }, [messages])
+
+  // useEffect(() => {
+  //   socket.on('chatlist', (list: any) => {
+  //     setList(list)
+  //   })
+
+  //   return () => socket.off('chatlist')
+  // }, [])
+
+  const onPlus = () => {
+    Swal.fire({
+      title: 'Digite o nome do usuário',
+      input: 'text',
+      inputAttributes: {
+        autocapitalize: 'off'
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Procurar',
+      showLoaderOnConfirm: true,
+      preConfirm: async (username) => {
+        try {
+          const response = await user.find({username})
+          if (response) {
+            newChat(response.data[0])
+            return response
+          }
+          throw new Error(response.statusText)
+        } catch (err: any) {
+          console.log(err)
+          Swal.showValidationMessage(
+            `Falha na requisição: ${err?.message || 'Não foi possível localizar o usuário'}`
+          )
+        }
+      },
+      allowOutsideClick: () => !Swal.isLoading()
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: `Localizado: ${result.value.data[0].username}`,
+          text: 'Envie uma mensagem para começar a conversa.'
+          // imageUrl: result.value.avatar_url
+        })
+      }
     })
   }
 
@@ -107,19 +165,20 @@ const Home: NextPage = () => {
             </div>
             <p className={styles.headerTitle} >Meus Chats</p>
           </div>
-          {list && list.map((chat, index) => (
-            <div className={styles.eachChat} key={index}>
-              {console.log(chat)}
-              <CardChat
-                onClick={(_id) => onClickChat(_id)}
-                _id={chat._id}
-                name={chat.name}
-                messagePreview={chat.message}
-                notification={chat.notification}
-                updateAt={chat.updateAt}
-              />
-            </div>
-          ))}
+          <div className={styles.listChats}>
+            {list && list.map((chat: any, index: any) => (
+              <div className={styles.eachChat} key={index}>
+                <CardChat
+                  onClick={(_id: any) => onClickChat(_id)}
+                  _id={chat._id}
+                  receiverName={chat.receiverName}
+                  messagePreview={chat.messages[chat.messages.length -1].message}
+                  // notification={chat.notification}
+                  updatedAt={chat.messages[chat.messages.length -1].createdAt}
+                />
+              </div>
+            ))}
+          </div>
         </section>
 
         <div className={styles.divider} />
@@ -127,25 +186,27 @@ const Home: NextPage = () => {
         <section className={styles.messenger} >
           <header className={styles.messengerHeader}>
             <Image height={70} width={70} src={onlyIcon} alt="Avatar" />
-            <p>{currentConversation?.name}</p>
+            <p>{currentConversation && currentConversation[0]?.receiverName}</p>
           </header>
 
+              {console.log(currentConversation)}
+
           <div className={styles.messageBody}>
-            {currentConversation?.message?.map((message) => (
-              <Message isSender={true} message={message} />
+            {currentConversation && currentConversation[0]?.messages?.map((message: any) => (
+              <Message isSender={message.senderId === currentUser.userId} message={message?.message} />
             ))}
           </div>
 
           <div className={styles.sender}>
             <TextareaAutosize
-            value={textareaValue}
-            onChange={(event) => {
-              setTextareaValue(event?.currentTarget?.value)
-            }}
+              value={textareaValue}
+              onChange={(event) => {
+                setTextareaValue(event?.currentTarget?.value)
+              }}
               onKeyDown={(event) => {
                 if ((event.ctrlKey) && event.code.toLowerCase() === 'enter' && textareaValue !== '') {
                   setMessages(state => [
-                    ...state, { message: String(textareaValue)}
+                    ...state, { message: String(textareaValue) }
                   ])
                   setTextareaValue('')
                 }
@@ -155,7 +216,7 @@ const Home: NextPage = () => {
               <Image height={50} width={50} src={sendButton} alt="Botão de enviar" onClick={() => {
                 if (textareaValue !== '') {
                   setMessages(state => [
-                    ...state, { message: String(textareaValue)}
+                    ...state, { message: String(textareaValue) }
                   ])
                   setTextareaValue('')
                 }

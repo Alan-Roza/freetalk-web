@@ -17,13 +17,13 @@ const circleSVG = (
   </svg>
 )
 
-function CardChat({ name, messagePreview, notification, updateAt, _id, onClick }: ICardChat) {
+function CardChat({ receiverName, messagePreview, notification, updatedAt, _id, onClick }:  any) {
   return (
     <div className={styles.main} onClick={() => onClick(_id)}>
-      <p className={styles.name}>{name}</p>
-      <p className={styles.message}>{messagePreview.slice(-1)}</p>
-      <div className={styles.notification}>{notification && circleSVG}</div>
-      <p className={styles.time}>{dayjs(updateAt).format('h:mm A')}</p>
+      <p className={styles.name}>{receiverName}</p>
+      <p className={styles.message}>{messagePreview || 'Clique aqui e comece uma conversa'}</p>
+      {/* <div className={styles.notification}>{notification && circleSVG}</div> */}
+      <p className={styles.time}>{dayjs(updatedAt).format('h:mm A')}</p>
     </div>
   )
 }
