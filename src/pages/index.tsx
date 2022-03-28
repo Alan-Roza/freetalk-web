@@ -37,25 +37,37 @@ const Home: NextPage = () => {
   const [textareaValue, setTextareaValue] = useState<string>('')
   const [currentUser, setCurrentUser] = useState<any>({})
   const [currentConversation, setCurrentConversation] = useState<IList | any>()
-  const [allChats, setAllChats] = useState<IList | any>()
+  const [receiverName, setReceiverName] = useState<IList | any>()
 
   const onClickChat = (_id: string) => {
     const chatSelected = list.filter((chat: any) => chat._id === _id)
-    console.log(chatSelected)
-    setCurrentConversation(chatSelected)
+    socket.emit('join', chatSelected[0]._id)
   }
 
+  useEffect(() => {
+    socket.on('joined', (joinedChat: any) => {
+      setCurrentConversation(joinedChat)
+    })
+  }, [])
+
+  useEffect(() => {
+    socket.on("joined", (joined: any) => {
+      console.log(joined, 'joined')
+    })
+  }, [])
+
   const newChat = (targetUser: any) => {
-    console.log(targetUser, 'target')
-    socket.emit('new-chat', {
-      references: [
-        targetUser._id,
-        currentUser.userId
+    socket.emit('create', {
+      references: [{
+        name: targetUser.username, 
+        userId: targetUser._id,
+      },
+      {
+        name: currentUser.username,
+        userId: currentUser.userId
+      }
       ],
-      messages: [{
-        senderId: currentUser.userId
-      }],
-      receiverName: targetUser.username,
+      messages: [],
       privateChat: true
     })
   }
@@ -90,25 +102,27 @@ const Home: NextPage = () => {
 
   useEffect(() => {
     socket.on('chat-created', (chats: any) => {
+      console.log([...list, chats], 'llist')
       setList( (prev: any) => ([...prev, chats]))
     })
   }, [])
 
-  // const sendMessage = () => {
-  //   socket.emit('chat-message', messages[messages.length - 1])
-  // }
+  useEffect(() => {
+    socket.on('chat-updated', (chats: any) => {
+      setList(chats)
+    })
+  }, [])
 
-  // useEffect(() => {
-  //   sendMessage()
-  // }, [messages])
+  useEffect(() => {
+    socket.on('message', (message: any) => {
+      console.log(message, currentConversation, 'cuirrent')
+      message && setCurrentConversation(message)
+      const newList = list.map((chat: any) => chat._id === message._id ? message : chat)
+      console.log(newList, 'new list')
 
-  // useEffect(() => {
-  //   socket.on('chatlist', (list: any) => {
-  //     setList(list)
-  //   })
-
-  //   return () => socket.off('chatlist')
-  // }, [])
+      // setList(newList)
+    })
+  }, [])
 
   const onPlus = () => {
     Swal.fire({
@@ -171,10 +185,11 @@ const Home: NextPage = () => {
                 <CardChat
                   onClick={(_id: any) => onClickChat(_id)}
                   _id={chat._id}
-                  receiverName={chat.receiverName}
-                  messagePreview={chat.messages[chat.messages.length -1].message}
-                  // notification={chat.notification}
-                  updatedAt={chat.messages[chat.messages.length -1].createdAt}
+                  currentUser={currentUser}
+                  chat={chat}
+                  messagePreview={chat.messages[chat.messages.length -1]?.message}
+                  notification={chat.notification}
+                  updatedAt={chat.messages[chat.messages.length -1]?.createdAt}
                 />
               </div>
             ))}
@@ -186,13 +201,11 @@ const Home: NextPage = () => {
         <section className={styles.messenger} >
           <header className={styles.messengerHeader}>
             <Image height={70} width={70} src={onlyIcon} alt="Avatar" />
-            <p>{currentConversation && currentConversation[0]?.receiverName}</p>
+            <p>{currentConversation && currentConversation?.receiverName}</p>
           </header>
 
-              {console.log(currentConversation)}
-
           <div className={styles.messageBody}>
-            {currentConversation && currentConversation[0]?.messages?.map((message: any) => (
+            {currentConversation && currentConversation?.messages?.map((message: any) => (
               <Message isSender={message.senderId === currentUser.userId} message={message?.message} />
             ))}
           </div>
@@ -204,10 +217,14 @@ const Home: NextPage = () => {
                 setTextareaValue(event?.currentTarget?.value)
               }}
               onKeyDown={(event) => {
-                if ((event.ctrlKey) && event.code.toLowerCase() === 'enter' && textareaValue !== '') {
-                  setMessages(state => [
-                    ...state, { message: String(textareaValue) }
-                  ])
+                if (event.code.toLowerCase() === 'enter') event.preventDefault()
+                if (event.code.toLowerCase() === 'enter' && textareaValue !== '') {
+                  socket.emit('message', 
+                  {
+                    message: String(textareaValue),
+                    senderId: currentUser.userId,
+                    createdAt: new Date()
+                  },)
                   setTextareaValue('')
                 }
               }}
@@ -215,9 +232,12 @@ const Home: NextPage = () => {
             <div className={styles.senderButton}>
               <Image height={50} width={50} src={sendButton} alt="Botão de enviar" onClick={() => {
                 if (textareaValue !== '') {
-                  setMessages(state => [
-                    ...state, { message: String(textareaValue) }
-                  ])
+                  socket.emit('message', 
+                  {
+                    message: String(textareaValue),
+                    senderId: currentUser.userId,
+                    createdAt: new Date()
+                  },)
                   setTextareaValue('')
                 }
               }} />

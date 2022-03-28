@@ -6,7 +6,7 @@ interface IMessage {
   message: string
 }
 
-export default function Message({ isSender, message }: IMessage | any) {
+export default function Message({ isSender, message }: IMessage) {
   return (
     <div className={!isSender ? styles.card : styles.cardReverse}>
       <div className={!isSender ? styles.textbox : styles.textboxReverse}>
