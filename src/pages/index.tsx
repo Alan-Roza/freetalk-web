@@ -3,7 +3,7 @@ import Head from 'next/head'
 import Image from 'next/image'
 import { FormEvent, useEffect, useState } from 'react'
 import styles from '../../styles/Home.module.scss'
-import { onlyIcon, plus, sendButton } from '../assets'
+import { onlyIcon, plus, sendButton, backArrow } from '../assets'
 import CardChat from '../components/CardChat'
 import socket from '../services/socket'
 import TextareaAutosize from 'react-textarea-autosize';
@@ -14,6 +14,7 @@ import authentication from '../consumers/authentication'
 import { useRouter } from 'next/router'
 import Swal from 'sweetalert2'
 import user from '../consumers/user'
+import { useMediaQuery } from 'react-responsive'
 
 interface IList {
   name: string
@@ -33,33 +34,53 @@ const Home: NextPage = () => {
   const router = useRouter()
 
   const [list, setList] = useState<IList[] | any>([])
-  const [messages, setMessages] = useState<IMessage[]>([])
   const [textareaValue, setTextareaValue] = useState<string>('')
-  const [currentUser, setCurrentUser] = useState<any>({})
+  const [currentUser, setCurrentUser] = useState<{ username: string | null, userId: string | null }>({ username: null, userId: null })
   const [currentConversation, setCurrentConversation] = useState<IList | any>()
-  const [receiverName, setReceiverName] = useState<IList | any>()
+  const [chatReceiver, setChatReceiver] = useState<{name: string, userId: string}>()
+  const [showMessage, setShowMessage] = useState<boolean>(true)
+
+  const isTabletOrMobile = useMediaQuery({
+    query: '(max-width: 991px)'
+  })
 
   const onClickChat = (_id: string) => {
-    const chatSelected = list.filter((chat: any) => chat._id === _id)
-    socket.emit('join', chatSelected[0]._id)
+    socket.emit('join', _id)
   }
 
   useEffect(() => {
+    socket.on('output-messages', (chats: any) => {
+      setList(chats)
+    })
+
     socket.on('joined', (joinedChat: any) => {
       setCurrentConversation(joinedChat)
+    })
+
+    socket.on('chat-created', (chats: any) => {
+      setList((prev: any) => ([...prev, chats]))
+    })
+
+    socket.on('chat-updated', (chats: any) => {
+      setList(chats)
+    })
+
+    socket.on('message', (message: any) => {
+      message && setCurrentConversation(message)
+      const newList = list.map((chat: any) => chat._id === message._id ? message : chat)
+      console.log(newList, 'new list')
     })
   }, [])
 
   useEffect(() => {
-    socket.on("joined", (joined: any) => {
-      console.log(joined, 'joined')
-    })
-  }, [])
+    console.log(currentUser, 'haha')
+    socket.emit('chat-in', currentUser?.userId)
+  }, [currentUser])
 
   const newChat = (targetUser: any) => {
     socket.emit('create', {
       references: [{
-        name: targetUser.username, 
+        name: targetUser.username,
         userId: targetUser._id,
       },
       {
@@ -77,7 +98,7 @@ const Home: NextPage = () => {
       try {
         const response = await authentication.refreshToken()
         if (response) {
-          setCurrentUser(response.data)
+          setCurrentUser(response)
         }
       } catch (err: any) {
         console.error(err)
@@ -95,34 +116,18 @@ const Home: NextPage = () => {
   }, [])
 
   useEffect(() => {
-    socket.on('output-messages', (chats: any) => {
-      setList(chats)
-    })
-  }, [])
+    (() => {
+      if (!isTabletOrMobile) return setShowMessage(true)
 
-  useEffect(() => {
-    socket.on('chat-created', (chats: any) => {
-      console.log([...list, chats], 'llist')
-      setList( (prev: any) => ([...prev, chats]))
-    })
-  }, [])
-
-  useEffect(() => {
-    socket.on('chat-updated', (chats: any) => {
-      setList(chats)
-    })
-  }, [])
-
-  useEffect(() => {
-    socket.on('message', (message: any) => {
-      console.log(message, currentConversation, 'cuirrent')
-      message && setCurrentConversation(message)
-      const newList = list.map((chat: any) => chat._id === message._id ? message : chat)
-      console.log(newList, 'new list')
-
-      // setList(newList)
-    })
-  }, [])
+      if (isTabletOrMobile && currentConversation) return setShowMessage(true)
+      if (isTabletOrMobile && !currentConversation) return setShowMessage(false)
+    })()
+    
+    if (currentConversation) {
+      const receiverName = Array.isArray(currentConversation?.references) && currentConversation.references?.find((item: any) => item.userId !== currentUser.userId)
+      setChatReceiver(receiverName)
+    }
+  }, [currentConversation, isTabletOrMobile])
 
   const onPlus = () => {
     Swal.fire({
@@ -136,7 +141,7 @@ const Home: NextPage = () => {
       showLoaderOnConfirm: true,
       preConfirm: async (username) => {
         try {
-          const response = await user.find({username})
+          const response = await user.find({ username })
           if (response) {
             newChat(response.data[0])
             return response
@@ -172,7 +177,7 @@ const Home: NextPage = () => {
       </Head>
 
       <main className={styles.main}>
-        <section className={styles.chats}>
+        <section className={styles.chats} style={!isTabletOrMobile ? { display: 'initial' } : !showMessage ? { display: 'initial' } : { display: 'none' }}>
           <div className={styles.header}>
             <div className={styles.search} onClick={() => onPlus()}>
               <Image height={'20px'} src={plus} alt="Sinal de mais" />
@@ -187,9 +192,9 @@ const Home: NextPage = () => {
                   _id={chat._id}
                   currentUser={currentUser}
                   chat={chat}
-                  messagePreview={chat.messages[chat.messages.length -1]?.message}
+                  messagePreview={chat.messages[chat.messages.length - 1]?.message}
                   notification={chat.notification}
-                  updatedAt={chat.messages[chat.messages.length -1]?.createdAt}
+                  updatedAt={chat.messages[chat.messages.length - 1]?.createdAt}
                 />
               </div>
             ))}
@@ -198,10 +203,15 @@ const Home: NextPage = () => {
 
         <div className={styles.divider} />
 
-        <section className={styles.messenger} >
+        <section className={styles.messenger} style={!isTabletOrMobile ? { display: 'grid' } : showMessage ? { display: 'grid' } : { display: 'none' }}>
           <header className={styles.messengerHeader}>
+            {isTabletOrMobile && (
+              <div className={styles.goBack}>
+                <Image src={backArrow} height={'40%'} width={'40%'} onClick={() => setCurrentConversation(null)} />
+              </div>
+            )}
             <Image height={70} width={70} src={onlyIcon} alt="Avatar" />
-            <p>{currentConversation && currentConversation?.receiverName}</p>
+            <p>{chatReceiver && chatReceiver.name}</p>
           </header>
 
           <div className={styles.messageBody}>
@@ -219,12 +229,12 @@ const Home: NextPage = () => {
               onKeyDown={(event) => {
                 if (event.code.toLowerCase() === 'enter') event.preventDefault()
                 if (event.code.toLowerCase() === 'enter' && textareaValue !== '') {
-                  socket.emit('message', 
-                  {
-                    message: String(textareaValue),
-                    senderId: currentUser.userId,
-                    createdAt: new Date()
-                  },)
+                  socket.emit('message',
+                    {
+                      message: String(textareaValue),
+                      senderId: currentUser.userId,
+                      createdAt: new Date()
+                    })
                   setTextareaValue('')
                 }
               }}
@@ -232,12 +242,12 @@ const Home: NextPage = () => {
             <div className={styles.senderButton}>
               <Image height={50} width={50} src={sendButton} alt="Botão de enviar" onClick={() => {
                 if (textareaValue !== '') {
-                  socket.emit('message', 
-                  {
-                    message: String(textareaValue),
-                    senderId: currentUser.userId,
-                    createdAt: new Date()
-                  },)
+                  socket.emit('message',
+                    {
+                      message: String(textareaValue),
+                      senderId: currentUser.userId,
+                      createdAt: new Date()
+                    })
                   setTextareaValue('')
                 }
               }} />

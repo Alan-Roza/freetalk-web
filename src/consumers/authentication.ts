@@ -6,7 +6,7 @@ const authentication = {
   refreshToken: async () => {
     try {
       const response: AxiosResponse = await axios.get('/refreshToken')
-      return response.data
+      return response.data.data
     } catch (err: any) {
       if (err.name === 'ERR_INTERNET_DISCONNECTED') throw new ErrInternetDisconnected()
       if (!err.response) throw new ConnectionFailed()

@@ -17,25 +17,22 @@ const circleSVG = (
   </svg>
 )
 
-function CardChat({ chat, messagePreview, notification, updatedAt, _id, onClick, currentUser }:  any) {
-  const [name, setName] = useState('')
-  console.log(chat)
+function CardChat({ chat, messagePreview, notification, updatedAt, _id, onClick, currentUser }: any) {
+  const [name, setName] = useState<any>()
+
   useEffect(() => {
-    const getReceiverName = () => {
-      console.log(chat)
-      const chatName = chat.references?.filter((item: any) => item.userId !== currentUser.userId)
-      console.log(chatName)
-      setName(chatName)
-    }
-    getReceiverName()
-  }, [chat])
-  
+    (() => {
+      const receiverName = Array.isArray(chat.references) && chat.references?.find((item: any) => item.userId !== currentUser.userId)
+      setName(receiverName.name)
+    })()
+  }, [chat, currentUser])
+
   return (
     <div className={styles.main} onClick={() => onClick(_id)}>
-      <p className={styles.name}>{name[0]}</p>
+      <p className={styles.name}>{name && name}</p>
       <p className={styles.message}>{messagePreview || 'Clique aqui e comece uma conversa'}</p>
       <div className={styles.notification}>{notification && circleSVG}</div>
-      <p className={styles.time}>{dayjs(updatedAt).format('h:mm A')}</p>
+      <p className={styles.time}>{updatedAt && dayjs(updatedAt).format('h:mm A')}</p>
     </div>
   )
 }

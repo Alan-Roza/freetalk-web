@@ -95,15 +95,17 @@ $background-color: #132B3C;
   background: #0C86DF;
 }
 
+.goBack {
+  color: white;
+  position: absolute;
+  left: 0;
+}
+
 .messenger {
   width: 100%;
   display: grid;
   height: 100vh;
   grid-template-rows: 7rem 5fr 10rem;
-
-  @media screen and (max-width: 991px) {
-    display: none;
-  }
 }
 
 .messageBody {
@@ -119,10 +121,6 @@ $background-color: #132B3C;
   justify-content: center;
   align-items: center;
   grid-row: 1;
-
-  @media screen and (max-width: 580px) {
-    flex-direction: column;
-  }
 }
 
 .sender {
@@ -137,10 +135,10 @@ $background-color: #132B3C;
   box-sizing: border-box;
   background-color: #9EB7CA;
   width: 100%;
-  height: fit-content;
   align-self: center;
   min-height: 30px;
-  max-height: 100px;
+  max-height: 65px;
+  height: 100%;
   border-radius: 15px;
   margin: 1.5rem;
   font-family: Quicksand;
