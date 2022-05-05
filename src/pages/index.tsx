@@ -86,8 +86,7 @@ const Home: NextPage = () => {
       {
         name: currentUser.username,
         userId: currentUser.userId
-      }
-      ],
+      }],
       messages: [],
       privateChat: true
     })
