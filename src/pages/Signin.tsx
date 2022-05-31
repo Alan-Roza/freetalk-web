@@ -23,7 +23,6 @@ function SignIn() {
         localStorage.setItem('@freetalk/token', response?.token)
         router.push('/')
       }
-      console.log(response)
     } catch(error: any) {
       console.log(error)
       Swal.fire({

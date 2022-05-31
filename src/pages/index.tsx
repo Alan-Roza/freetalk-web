@@ -3,7 +3,7 @@ import Head from 'next/head'
 import Image from 'next/image'
 import { FormEvent, useEffect, useState } from 'react'
 import styles from '../../styles/Home.module.scss'
-import { onlyIcon, plus, sendButton, backArrow } from '../assets'
+import { onlyIcon, plus, sendButton, backArrow, withoutMessage } from '../assets'
 import CardChat from '../components/CardChat'
 import socket from '../services/socket'
 import TextareaAutosize from 'react-textarea-autosize';
@@ -37,7 +37,7 @@ const Home: NextPage = () => {
   const [textareaValue, setTextareaValue] = useState<string>('')
   const [currentUser, setCurrentUser] = useState<{ username: string | null, userId: string | null }>({ username: null, userId: null })
   const [currentConversation, setCurrentConversation] = useState<IList | any>()
-  const [chatReceiver, setChatReceiver] = useState<{name: string, userId: string}>()
+  const [chatReceiver, setChatReceiver] = useState<{ name: string, userId: string }>()
   const [showMessage, setShowMessage] = useState<boolean>(true)
 
   const isTabletOrMobile = useMediaQuery({
@@ -121,7 +121,7 @@ const Home: NextPage = () => {
       if (isTabletOrMobile && currentConversation) return setShowMessage(true)
       if (isTabletOrMobile && !currentConversation) return setShowMessage(false)
     })()
-    
+
     if (currentConversation) {
       const receiverName = Array.isArray(currentConversation?.references) && currentConversation.references?.find((item: any) => item.userId !== currentUser.userId)
       setChatReceiver(receiverName)
@@ -214,44 +214,50 @@ const Home: NextPage = () => {
           </header>
 
           <div className={styles.messageBody}>
-            {currentConversation && currentConversation?.messages?.map((message: any) => (
-              <Message isSender={message.senderId === currentUser.userId} message={message?.message} />
-            ))}
+            {currentConversation ? currentConversation?.messages?.map((message: any) => (
+              <Message isSender={message.senderId === currentUser.userId} message={message?.message} createdAt={message.createdAt} />
+            )) : (
+              <div className={styles.withoutImage}>
+                <Image className={styles.withoutImage} src={withoutMessage} />
+              </div>
+            )}
           </div>
 
-          <div className={styles.sender}>
-            <TextareaAutosize
-              value={textareaValue}
-              onChange={(event) => {
-                setTextareaValue(event?.currentTarget?.value)
-              }}
-              onKeyDown={(event) => {
-                if (event.code.toLowerCase() === 'enter') event.preventDefault()
-                if (event.code.toLowerCase() === 'enter' && textareaValue !== '') {
-                  socket.emit('message',
-                    {
-                      message: String(textareaValue),
-                      senderId: currentUser.userId,
-                      createdAt: new Date()
-                    })
-                  setTextareaValue('')
-                }
-              }}
-              placeholder='Digite sua mensagem...' autoFocus={true} className={styles.textarea} minRows={1} maxRows={5} />
-            <div className={styles.senderButton}>
-              <Image height={50} width={50} src={sendButton} alt="Botão de enviar" onClick={() => {
-                if (textareaValue !== '') {
-                  socket.emit('message',
-                    {
-                      message: String(textareaValue),
-                      senderId: currentUser.userId,
-                      createdAt: new Date()
-                    })
-                  setTextareaValue('')
-                }
-              }} />
+          {currentConversation && (
+            <div className={styles.sender}>
+              <TextareaAutosize
+                value={textareaValue}
+                onChange={(event) => {
+                  setTextareaValue(event?.currentTarget?.value)
+                }}
+                onKeyDown={(event) => {
+                  if (event.code.toLowerCase() === 'enter') event.preventDefault()
+                  if (event.code.toLowerCase() === 'enter' && textareaValue !== '') {
+                    socket.emit('message',
+                      {
+                        message: String(textareaValue),
+                        senderId: currentUser.userId,
+                        createdAt: new Date()
+                      })
+                    setTextareaValue('')
+                  }
+                }}
+                placeholder='Digite sua mensagem...' autoFocus={true} className={styles.textarea} minRows={1} maxRows={5} />
+              <div className={styles.senderButton}>
+                <Image height={50} width={50} src={sendButton} alt="Botão de enviar" onClick={() => {
+                  if (textareaValue !== '') {
+                    socket.emit('message',
+                      {
+                        message: String(textareaValue),
+                        senderId: currentUser.userId,
+                        createdAt: new Date()
+                      })
+                    setTextareaValue('')
+                  }
+                }} />
+              </div>
             </div>
-          </div>
+          )}
         </section>
       </main>
     </div>

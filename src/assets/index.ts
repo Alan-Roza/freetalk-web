@@ -5,6 +5,7 @@ import sendButton from './send-button.svg'
 import eyeVisible from './eye-visible.svg'
 import eyeNotVisible from './eye-not-visible.svg'
 import backArrow from './back-arrow.svg'
+import withoutMessage from './without_chat_message.svg'
 
 export {
   plus,
@@ -13,5 +14,6 @@ export {
   backArrow,
   sendButton,
   eyeVisible,
-  eyeNotVisible
+  eyeNotVisible,
+  withoutMessage
 }

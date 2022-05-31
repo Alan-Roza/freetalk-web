@@ -133,13 +133,13 @@ $background-color: #132B3C;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
-  background-color: #9EB7CA;
+  background-color: #0C86DF;
   width: 100%;
   align-self: center;
   min-height: 30px;
   max-height: 65px;
   height: 100%;
-  border-radius: 15px;
+  border-radius: 10px;
   margin: 1.5rem;
   font-family: Quicksand;
   font-weight: 800;
@@ -161,5 +161,16 @@ $background-color: #132B3C;
   transition: 300ms;
   filter: brightness(0.6);
   transform: scale(1.1);
+}
 
+.withoutImage {
+  width: 100% !important;
+  height: 100% !important;
+  overflow-y: hidden;
+}
+
+.withoutImage > span {
+  width: 100% !important;
+  height: 100% !important;
+  top: 50px;
 }
