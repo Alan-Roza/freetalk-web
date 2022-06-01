@@ -17,7 +17,7 @@ export default function Message({ isSender, message, createdAt }: IMessage) {
 
   useEffect(() => {
     scrollToBottom()
-  }, [message])
+  }, [message, messagesEndRef])
 
   return (
     <div className={!isSender ? styles.card : styles.cardReverse}>

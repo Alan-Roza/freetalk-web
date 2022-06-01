@@ -210,7 +210,7 @@ const Home: NextPage = () => {
               </div>
             )}
             <Image height={70} width={70} src={onlyIcon} alt="Avatar" />
-            <p>{chatReceiver && chatReceiver.name}</p>
+            <p>{chatReceiver ? chatReceiver.name : 'FreeTalk'}</p>
           </header>
 
           <div className={styles.messageBody}>
