@@ -16,8 +16,6 @@ function SignUp() {
   const onSubmit = async (values: any) => {
     values.preventDefault();
 
-    console.log(values)
-
     try {
       const response = await signup.register({
         username: values.target.username.value, 
@@ -35,7 +33,6 @@ function SignUp() {
           timer: 1500
         })
       }
-      console.log(response)
     } catch(error: any) {
       console.log(error)
       Swal.fire({

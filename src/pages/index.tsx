@@ -68,31 +68,30 @@ const Home: NextPage = () => {
 
   // Inicia-se a escuta dos eventos logo que inicia a página
   useEffect(() => {
-    socket.on('output-messages', (chats: any) => {
-      setList(chats)
-    })
-
     socket.on('joined', (joinedChat: any) => {
       setCurrentConversation(joinedChat)
+    })
+
+    socket.on('output-messages', (chats: any) => {
+      setList(chats)
     })
 
     socket.on('chat-created', (chats: any) => {
       setList((prev: any) => ([...prev, chats]))
     })
 
-    socket.on('chat-updated', (chats: any) => {
-      setList(chats)
-    })
-
     socket.on('message', (message: any) => {
       message && setCurrentConversation(message)
-      // const newList = list.map((chat: any) => chat._id === message._id ? message : chat)
     })
+
+    return () => {
+      socket.removeAllListeners()
+    }
   }, [])
 
   useEffect(() => {
     socket.emit('chat-in', currentUser?.userId)
-  }, [currentUser])
+  }, [currentUser, currentConversation?.messages])
 
   // emit para iniciar um novo chat
   const newChat = (targetUser: any) => {
@@ -145,6 +144,7 @@ const Home: NextPage = () => {
     if (currentConversation) {
       const receiverName = Array.isArray(currentConversation?.references) ? currentConversation.references?.find((item: any) => item.userId !== currentUser.userId) : undefined
       setChatReceiver(receiverName)
+      if (!receiverName && currentConversation?.references) setChatReceiver(currentConversation?.references[0]) 
     }
   }, [currentConversation, isTabletOrMobile])
 
@@ -224,7 +224,7 @@ const Home: NextPage = () => {
                   _id={chat._id}
                   currentUser={currentUser}
                   chat={chat}
-                  messagePreview={chat.messages[chat.messages.length - 1]?.message}
+                  messagePreview={chat?.messages[chat?.messages?.length - 1]?.message}
                   notification={chat.notification}
                   updatedAt={chat.messages[chat.messages.length - 1]?.createdAt}
                 />
@@ -247,7 +247,7 @@ const Home: NextPage = () => {
               </div>
             )}
             <Image height={70} width={70} src={onlyIcon} alt="Avatar" />
-            <p>{chatReceiver ? chatReceiver.name : 'FreeTalk'}</p>
+            <p>{chatReceiver && currentConversation ? chatReceiver.name : 'FreeTalk'}</p>
             {!isTabletOrMobile && (
               <div className={styles.logout}>
                 <Image src={logout} height={'40%'} width={'40%'} onClick={() => logoutChat()} />
@@ -281,7 +281,8 @@ const Home: NextPage = () => {
                       {
                         message: String(textareaValue),
                         senderId: currentUser.userId,
-                        createdAt: new Date()
+                        createdAt: new Date(),
+                        currentUser: currentUser?.userId
                       })
                     setTextareaValue('')
                   }

@@ -23,7 +23,7 @@ function CardChat({ chat, messagePreview, notification, updatedAt, _id, onClick,
   useEffect(() => {
     (() => {
       const receiverName = Array.isArray(chat.references) && chat.references?.find((item: any) => item.userId !== currentUser.userId)
-      setName(receiverName?.name ?? '')
+      setName(receiverName?.name ?? 'Eu')
     })()
   }, [chat, currentUser])
 
