@@ -41,6 +41,7 @@ $background-color: #132B3C;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
 }
 
 .headerTitle {
@@ -99,6 +100,22 @@ $background-color: #132B3C;
   color: white;
   position: absolute;
   left: 0;
+  cursor: pointer;
+}
+
+.logout {
+  color: white;
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+
+  @media (max-width: 992px) {
+    right: 70px;
+  }
+
+  @media (max-width: 470px) {
+    right: 60px;
+  }
 }
 
 .messenger {

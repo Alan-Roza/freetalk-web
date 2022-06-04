@@ -3,7 +3,7 @@ import Head from 'next/head'
 import Image from 'next/image'
 import { FormEvent, useEffect, useState } from 'react'
 import styles from '../../styles/Home.module.scss'
-import { onlyIcon, plus, sendButton, backArrow, withoutMessage } from '../assets'
+import { onlyIcon, plus, sendButton, backArrow, withoutMessage, logout } from '../assets'
 import CardChat from '../components/CardChat'
 import socket from '../services/socket'
 import TextareaAutosize from 'react-textarea-autosize';
@@ -15,39 +15,58 @@ import { useRouter } from 'next/router'
 import Swal from 'sweetalert2'
 import user from '../consumers/user'
 import { useMediaQuery } from 'react-responsive'
+import { clearStorage } from '../utils/localStorage'
 
-interface IList {
-  name: string
-  receiverName: string
-  message: string[]
-  notification: boolean
-  updateAt: Date | string
+// Interfaces para tipagem
+interface IChat {
+  _id: string
+  references: IRef[]
+  privateChat: boolean
+  messages: IMessage[] | []
+}
+
+interface IRef {
+  name: string | null
+  userId: string | null
   _id: string
 }
 
 interface IMessage {
   message: string
-  _id?: string
+  _id: string
+  senderId: string
+  createdAt: string
 }
 
 const Home: NextPage = () => {
   const router = useRouter()
 
-  const [list, setList] = useState<IList[] | any>([])
+  const [list, setList] = useState<IChat[] | null>([])
   const [textareaValue, setTextareaValue] = useState<string>('')
   const [currentUser, setCurrentUser] = useState<{ username: string | null, userId: string | null }>({ username: null, userId: null })
-  const [currentConversation, setCurrentConversation] = useState<IList | any>()
-  const [chatReceiver, setChatReceiver] = useState<{ name: string, userId: string }>()
+  const [currentConversation, setCurrentConversation] = useState<IChat | null>()
+  const [chatReceiver, setChatReceiver] = useState<IRef>()
   const [showMessage, setShowMessage] = useState<boolean>(true)
 
+  // Constante para distinção de dispositivos 
   const isTabletOrMobile = useMediaQuery({
     query: '(max-width: 991px)'
   })
 
+  // Ao clicar num chat é feito um emit para pegar as informações deste chat
   const onClickChat = (_id: string) => {
-    socket.emit('join', _id)
+    if (_id !== currentConversation?._id) {
+      socket.emit('join', _id)
+    } else setCurrentConversation(null)
   }
 
+  // Sair do chat (logout)
+  const logoutChat = () => {
+    clearStorage()
+    router.push('/Signin')
+  }
+
+  // Inicia-se a escuta dos eventos logo que inicia a página
   useEffect(() => {
     socket.on('output-messages', (chats: any) => {
       setList(chats)
@@ -67,16 +86,15 @@ const Home: NextPage = () => {
 
     socket.on('message', (message: any) => {
       message && setCurrentConversation(message)
-      const newList = list.map((chat: any) => chat._id === message._id ? message : chat)
-      console.log(newList, 'new list')
+      // const newList = list.map((chat: any) => chat._id === message._id ? message : chat)
     })
   }, [])
 
   useEffect(() => {
-    console.log(currentUser, 'haha')
     socket.emit('chat-in', currentUser?.userId)
   }, [currentUser])
 
+  // emit para iniciar um novo chat
   const newChat = (targetUser: any) => {
     socket.emit('create', {
       references: [{
@@ -92,6 +110,7 @@ const Home: NextPage = () => {
     })
   }
 
+  // Refresh Token, caso não possua token retorna para o SignIn
   useEffect(() => {
     async function getRefreshToken() {
       try {
@@ -114,6 +133,7 @@ const Home: NextPage = () => {
     getRefreshToken()
   }, [])
 
+  // Verifica qual o dispositivo que está sendo utilizado (através de media query)
   useEffect(() => {
     (() => {
       if (!isTabletOrMobile) return setShowMessage(true)
@@ -123,11 +143,12 @@ const Home: NextPage = () => {
     })()
 
     if (currentConversation) {
-      const receiverName = Array.isArray(currentConversation?.references) && currentConversation.references?.find((item: any) => item.userId !== currentUser.userId)
+      const receiverName = Array.isArray(currentConversation?.references) ? currentConversation.references?.find((item: any) => item.userId !== currentUser.userId) : undefined
       setChatReceiver(receiverName)
     }
   }, [currentConversation, isTabletOrMobile])
 
+  // Adiciona uma nova conversa
   const onPlus = () => {
     Swal.fire({
       title: 'Digite o nome do usuário',
@@ -159,7 +180,6 @@ const Home: NextPage = () => {
         Swal.fire({
           title: `Localizado: ${result.value.data[0].username}`,
           text: 'Envie uma mensagem para começar a conversa.'
-          // imageUrl: result.value.avatar_url
         })
       }
     })
@@ -167,6 +187,7 @@ const Home: NextPage = () => {
 
   return (
     <div className={styles.container}>
+      {/* Meta configurações */}
       <Head>
         <title>FreeTalk</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0"></meta>
@@ -175,19 +196,31 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
+      {/* Conteúdo da página */}
       <main className={styles.main}>
+
+        {/* Listagem de conversas         */}
         <section className={styles.chats} style={!isTabletOrMobile ? { display: 'initial' } : !showMessage ? { display: 'initial' } : { display: 'none' }}>
+
+          {/* Header */}
           <div className={styles.header}>
             <div className={styles.search} onClick={() => onPlus()}>
               <Image height={'20px'} src={plus} alt="Sinal de mais" />
             </div>
+            {isTabletOrMobile && (
+              <div className={styles.logout}>
+                <Image src={logout} height={'40%'} width={'40%'} onClick={() => logoutChat()} />
+              </div>
+            )}
             <p className={styles.headerTitle} >Meus Chats</p>
           </div>
+
+          {/* Listagem */}
           <div className={styles.listChats}>
-            {list && list.map((chat: any, index: any) => (
+            {list && list.map((chat: any, index: number) => (
               <div className={styles.eachChat} key={index}>
                 <CardChat
-                  onClick={(_id: any) => onClickChat(_id)}
+                  onClick={(_id: string) => onClickChat(_id)}
                   _id={chat._id}
                   currentUser={currentUser}
                   chat={chat}
@@ -200,9 +233,13 @@ const Home: NextPage = () => {
           </div>
         </section>
 
+        {/* Linha divisora entre listagem e chat */}
         <div className={styles.divider} />
 
+        {/* Chat para Conversa */}
         <section className={styles.messenger} style={!isTabletOrMobile ? { display: 'grid' } : showMessage ? { display: 'grid' } : { display: 'none' }}>
+
+          {/* Header */}
           <header className={styles.messengerHeader}>
             {isTabletOrMobile && (
               <div className={styles.goBack}>
@@ -211,8 +248,14 @@ const Home: NextPage = () => {
             )}
             <Image height={70} width={70} src={onlyIcon} alt="Avatar" />
             <p>{chatReceiver ? chatReceiver.name : 'FreeTalk'}</p>
+            {!isTabletOrMobile && (
+              <div className={styles.logout}>
+                <Image src={logout} height={'40%'} width={'40%'} onClick={() => logoutChat()} />
+              </div>
+            )}
           </header>
 
+          {/* Corpo da conversa */}
           <div className={styles.messageBody}>
             {currentConversation ? currentConversation?.messages?.map((message: any) => (
               <Message isSender={message.senderId === currentUser.userId} message={message?.message} createdAt={message.createdAt} />
@@ -223,6 +266,7 @@ const Home: NextPage = () => {
             )}
           </div>
 
+          {/* Input para envio das conversas */}
           {currentConversation && (
             <div className={styles.sender}>
               <TextareaAutosize
@@ -242,7 +286,12 @@ const Home: NextPage = () => {
                     setTextareaValue('')
                   }
                 }}
-                placeholder='Digite sua mensagem...' autoFocus={true} className={styles.textarea} minRows={1} maxRows={5} />
+                placeholder='Digite sua mensagem...'
+                autoFocus
+                className={styles.textarea}
+                minRows={1}
+                maxRows={5}
+              />
               <div className={styles.senderButton}>
                 <Image height={50} width={50} src={sendButton} alt="Botão de enviar" onClick={() => {
                   if (textareaValue !== '') {

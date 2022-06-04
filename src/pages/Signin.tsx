@@ -11,6 +11,7 @@ function SignIn() {
 
   const [togglePassword, setTogglePassword] = useState(false)
 
+  // Salva o token no localStorage e realiza a request para entrar no sistema
   const onSubmit = async (values: any) => {
     values.preventDefault();
 

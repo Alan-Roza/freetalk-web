@@ -12,6 +12,7 @@ function SignUp() {
   const [togglePasswordMain, setTogglePasswordMain] = useState(false)
   const [togglePasswordConfirm, setTogglePasswordConfirm] = useState(false)
 
+  //  Realiza a request para cadastro de novos usuários e redireciona para a página de SignIn
   const onSubmit = async (values: any) => {
     values.preventDefault();
 
